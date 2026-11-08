@@ -34,7 +34,12 @@ $request = Services::request();
     ?>
     <link rel="stylesheet" href="resources/bootswatch5/<?= esc($theme, 'attr') ?>/bootstrap.min.css">
     <link rel="stylesheet" href="css/login.css">
-    <meta name="theme-color" content="#2c3e50">
+    <?php if ($theme === 'modern'): ?>
+        <link rel="stylesheet" href="css/modern_login.css?v=<?= filemtime(FCPATH . 'css/modern_login.css') ?>">
+        <meta name="theme-color" content="#f5f6f8">
+    <?php else: ?>
+        <meta name="theme-color" content="#2c3e50">
+    <?php endif; ?>
 </head>
 
 <body class="bg-secondary-subtle d-flex flex-column">

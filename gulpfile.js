@@ -136,7 +136,7 @@ gulp.task('copy-bootswatch5', function() {
     );
 });
 
-// Copy base Bootstrap 3 and Bootstrap 5 stylesheets
+// Copy base Bootstrap 3 and Bootstrap 5 stylesheets, also as the base of the "modern" theme (styled by public/css/modern.css)
 gulp.task('copy-bootstrap', function() {
     return Promise.all([
         pipeline(
@@ -144,11 +144,22 @@ gulp.task('copy-bootstrap', function() {
             gulp.dest('public/resources/bootswatch/bootstrap')
         ),
         pipeline(
+            gulp.src('./node_modules/bootstrap/dist/css/bootstrap.min.css*', { encoding: false }),
+            gulp.dest('public/resources/bootswatch/modern')
+        ),
+        pipeline(
             gulp.src([
                 './node_modules/bootstrap5/dist/css/bootstrap.min.css*',
                 './node_modules/bootstrap5/dist/css/bootstrap.rtl.min.css*'
             ], { encoding: false }),
             gulp.dest('public/resources/bootswatch5/bootstrap')
+        ),
+        pipeline(
+            gulp.src([
+                './node_modules/bootstrap5/dist/css/bootstrap.min.css*',
+                './node_modules/bootstrap5/dist/css/bootstrap.rtl.min.css*'
+            ], { encoding: false }),
+            gulp.dest('public/resources/bootswatch5/modern')
         )
     ]);
 });

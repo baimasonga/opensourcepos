@@ -19,3 +19,12 @@ The Docker compose files also set `PHP_TIMEZONE=Africa/Freetown`.
 All of these can be changed under **Configuration → Locale** and **Configuration → Tax**.
 Check the GST rate and whether your prices include tax (**Tax Included**) against current
 National Revenue Authority guidance for your business.
+
+## Modern theme
+
+The default theme is **Modern**: a neutral, flat design (light grey background, white cards,
+one indigo accent colour, system fonts so it works offline). It is applied by the
+`ModernThemeDefault` migration only to installs still on the stock Flatly theme.
+Its styles live in `public/css/modern.css` (main app) and `public/css/modern_login.css`
+(login page), and only affect the screen, so printed receipts and invoices are unchanged.
+The previous themes can still be chosen under **Configuration → General → Theme**.
