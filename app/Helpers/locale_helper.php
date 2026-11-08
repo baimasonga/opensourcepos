@@ -151,6 +151,7 @@ function get_timezones(): array
         'Europe/Lisbon'                  => '(GMT) Greenwich Mean Time : Lisbon',
         'Europe/London'                  => '(GMT) Greenwich Mean Time : London',
         'Africa/Abidjan'                 => '(GMT) Monrovia, Reykjavik',
+        'Africa/Freetown'                => '(GMT) Freetown',
         'Europe/Amsterdam'               => '(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna',
         'Europe/Belgrade'                => '(GMT+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague',
         'Europe/Brussels'                => '(GMT+01:00) Brussels, Copenhagen, Madrid, Paris',

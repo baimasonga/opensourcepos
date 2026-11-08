@@ -30,7 +30,7 @@ services:
             - CI_ENVIRONMENT=production
             - ALLOWED_HOSTNAMES=localhost
             - FORCE_HTTPS=false
-            - PHP_TIMEZONE=UTC
+            - PHP_TIMEZONE=Africa/Freetown
             - MYSQL_USERNAME=admin
             - MYSQL_PASSWORD=pointofsale
             - MYSQL_DB_NAME=ospos
