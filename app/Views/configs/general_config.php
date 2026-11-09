@@ -27,12 +27,14 @@
                     ) ?>
                 </div>
                 <div class="col-xs-4 col-sm-6 col-md-7 col-lg-8">
+                    <?php if ($config['theme'] !== 'modern'): ?>
                     <p class="form-control-static">
                         <a href="<?= 'https://bootswatch.com/3/' . ('bootstrap' == ($config['theme']) ? 'default' : esc($config['theme'])) ?>" target="_blank" rel="noopener">
                             <span><?= lang('Config.theme_preview') . ' ' . ucfirst(esc($config['theme'])) . ' ' ?></span>
                             <span class="glyphicon glyphicon-new-window"></span>
                         </a>
                     </p>
+                    <?php endif; ?>
                 </div>
             </div>
 

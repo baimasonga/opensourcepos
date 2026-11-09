@@ -32,12 +32,13 @@ $request = Services::request();
         <!--inject:prod:css -->
         <!-- endinject -->
 
-        <!-- Tweaks to the UI for a particular theme should drop here  -->
-        <?php if ($config['theme'] != 'flatly' && file_exists($_SERVER['DOCUMENT_ROOT'] . '/public/css/' . esc($config['theme']) . '.css')) { ?>
-            <link rel="stylesheet" href="<?= 'css/' . esc($config['theme']) . '.css' ?>">
-        <?php } ?>
         <!-- inject:prod:js -->
         <!-- endinject -->
+    <?php endif; ?>
+
+    <?php if ($theme !== 'flatly' && is_file(FCPATH . "css/$theme.css")): ?>
+        <!-- Theme-specific UI styling, loaded last so it overrides the shared stylesheets -->
+        <link rel="stylesheet" href="css/<?= $theme ?>.css?v=<?= filemtime(FCPATH . "css/$theme.css") ?>">
     <?php endif; ?>
 
     <?= view('partial/header_js') ?>
