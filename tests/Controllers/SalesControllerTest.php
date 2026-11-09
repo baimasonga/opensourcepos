@@ -5,7 +5,9 @@ namespace Tests\Controllers;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
+use CodeIgniter\Test\TestResponse;
 use CodeIgniter\Config\Services;
+use App\Models\Appconfig;
 use App\Models\Employee;
 use Config\Database;
 use Tests\Support\DatabaseBootstrapTrait;
@@ -721,5 +723,57 @@ class SalesControllerTest extends CIUnitTestCase
         $cart = Services::session()->get('sales_cart');
         $this->assertNotEmpty($cart);
         $this->assertNotSame($itemId, array_values($cart)[0]['item_id']);
+    }
+
+    public function testPostComplete_AutoPrintsWhenBehaviourIsAlways(): void
+    {
+        $response = $this->completeCashSaleWithPrintBehaviour('always');
+
+        $response->assertSee("\$(window).on('load'", false);
+    }
+
+    public function testPostComplete_SkipsAutoPrintWhenBehaviourIsNever(): void
+    {
+        $response = $this->completeCashSaleWithPrintBehaviour('never', true);
+
+        $response->assertDontSee("\$(window).on('load'", false);
+    }
+
+    private function completeCashSaleWithPrintBehaviour(string $behaviour, ?bool $sessionPrintAfterSale = null): TestResponse
+    {
+        $appconfig = model(Appconfig::class);
+        $previous  = $appconfig->get_value('print_receipt_check_behaviour', 'last');
+        $appconfig->save(['print_receipt_check_behaviour' => $behaviour]);
+
+        try {
+            $cashierId = $this->createCashierEmployee();
+            $itemId = $this->createTestItem(HAS_NO_STOCK);
+            $this->loginAs($cashierId);
+            $this->seedCartLine(1, '10.00', $itemId);
+
+            $sessionData = [
+                'sale_id'        => NEW_ENTRY,
+                'sales_payments' => [
+                    lang('Sales.cash') => [
+                        'payment_type'    => lang('Sales.cash'),
+                        'payment_amount'  => '10.00',
+                        'cash_refund'     => 0,
+                        'cash_adjustment' => CASH_ADJUSTMENT_FALSE,
+                        'reference_code'  => '',
+                    ],
+                ],
+            ];
+            if ($sessionPrintAfterSale !== null) {
+                $sessionData['sales_print_after_sale'] = $sessionPrintAfterSale;
+            }
+            $this->withSession(array_merge($this->session, $sessionData));
+
+            $response = $this->post('/sales/complete');
+            $response->assertDontSee(lang('Sales.amount_due_not_covered'));
+
+            return $response;
+        } finally {
+            $appconfig->save(['print_receipt_check_behaviour' => $previous]);
+        }
     }
 }
