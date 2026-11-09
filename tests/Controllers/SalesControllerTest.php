@@ -729,14 +729,14 @@ class SalesControllerTest extends CIUnitTestCase
     {
         $response = $this->completeCashSaleWithPrintBehaviour('always');
 
-        $response->assertSee("\$(window).on('load'", false);
+        $this->assertStringContainsString("\$(window).on('load'", $response->getBody());
     }
 
     public function testPostComplete_SkipsAutoPrintWhenBehaviourIsNever(): void
     {
         $response = $this->completeCashSaleWithPrintBehaviour('never', true);
 
-        $response->assertDontSee("\$(window).on('load'", false);
+        $this->assertStringNotContainsString("\$(window).on('load'", $response->getBody());
     }
 
     private function completeCashSaleWithPrintBehaviour(string $behaviour, ?bool $sessionPrintAfterSale = null): TestResponse
