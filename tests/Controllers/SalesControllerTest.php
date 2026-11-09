@@ -5,9 +5,11 @@ namespace Tests\Controllers;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
+use CodeIgniter\Test\TestResponse;
 use CodeIgniter\Config\Services;
 use App\Models\Employee;
 use Config\Database;
+use Config\OSPOS;
 use Tests\Support\DatabaseBootstrapTrait;
 use Tests\Support\ItemFixtureTrait;
 use Tests\Support\EmployeeFixtureTrait;
@@ -33,6 +35,9 @@ class SalesControllerTest extends CIUnitTestCase
     use ItemFixtureTrait;
     use EmployeeFixtureTrait;
     use SaleFixtureTrait;
+
+    // Emitted by app/Views/partial/print_receipt.php only when the receipt should print on load.
+    private const AUTO_PRINT_MARKER = "$(window).on('load'";
 
     protected $migrate     = true;
     protected $migrateOnce = true;
@@ -661,6 +666,81 @@ class SalesControllerTest extends CIUnitTestCase
         $salesCountAfter = Database::connect()->table('sales')->countAllResults();
         $this->assertSame($salesCountBefore + 1, $salesCountAfter);
         $response->assertDontSee(lang('Sales.amount_due_not_covered'));
+    }
+
+    public function testPostComplete_AutoPrintsReceiptWhenBehaviourIsAlways(): void
+    {
+        $response = $this->completePaidSale('always', null);
+
+        $response->assertSee(self::AUTO_PRINT_MARKER, null, false);
+    }
+
+    public function testPostComplete_SkipsAutoPrintWhenBehaviourIsNever(): void
+    {
+        $response = $this->completePaidSale('never', true);
+
+        $response->assertDontSee(self::AUTO_PRINT_MARKER, null, false);
+    }
+
+    public function testPostComplete_AutoPrintsReceiptWhenLastChoiceWasPrint(): void
+    {
+        $response = $this->completePaidSale('last', true);
+
+        $response->assertSee(self::AUTO_PRINT_MARKER, null, false);
+    }
+
+    public function testPostComplete_SkipsAutoPrintWhenLastChoiceWasNoPrint(): void
+    {
+        $response = $this->completePaidSale('last', false);
+
+        $response->assertDontSee(self::AUTO_PRINT_MARKER, null, false);
+    }
+
+    /**
+     * Completes a fully paid cash sale and returns the receipt page response.
+     * $printAfterSale is the register checkbox's last saved value, or null if the cashier never touched it.
+     */
+    private function completePaidSale(string $printBehaviour, ?bool $printAfterSale): TestResponse
+    {
+        $settings = &config(OSPOS::class)->settings;
+        $originalBehaviour = $settings['print_receipt_check_behaviour'] ?? null;
+        $settings['print_receipt_check_behaviour'] = $printBehaviour;
+
+        $cashierId = $this->createCashierEmployee();
+        $itemId = $this->createTestItem(HAS_NO_STOCK);
+        $this->loginAs($cashierId);
+        $this->seedCartLine(1, '10.00', $itemId);
+
+        $session = array_merge($this->session, [
+            'sale_id'        => NEW_ENTRY,
+            'sales_payments' => [
+                lang('Sales.cash') => [
+                    'payment_type'    => lang('Sales.cash'),
+                    'payment_amount'  => '10.00',
+                    'cash_refund'     => 0,
+                    'cash_adjustment' => 0,
+                    'reference_code'  => '',
+                ],
+            ],
+        ]);
+
+        if ($printAfterSale !== null) {
+            $session['sales_print_after_sale'] = $printAfterSale;
+        }
+
+        $this->withSession($session);
+
+        $salesCountBefore = Database::connect()->table('sales')->countAllResults();
+
+        try {
+            $response = $this->post('/sales/complete');
+        } finally {
+            $settings['print_receipt_check_behaviour'] = $originalBehaviour;
+        }
+
+        $this->assertSame($salesCountBefore + 1, Database::connect()->table('sales')->countAllResults());
+
+        return $response;
     }
 
     public function testRegisterEscapesMaliciousTaxName(): void
