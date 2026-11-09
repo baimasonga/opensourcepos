@@ -28,3 +28,7 @@ one indigo accent colour, system fonts so it works offline). It is applied by th
 Its styles live in `public/css/modern.css` (main app) and `public/css/modern_login.css`
 (login page), and only affect the screen, so printed receipts and invoices are unchanged.
 The previous themes can still be chosen under **Configuration → General → Theme**.
+
+## Desktop app
+
+For Windows tills there is a desktop app in [`desktop/`](../desktop/README.md): it opens OSPOS in its own window and can print receipts without a print dialog.

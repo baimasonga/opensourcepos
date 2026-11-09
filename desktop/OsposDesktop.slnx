@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OsposDesktop.Core/OsposDesktop.Core.csproj" />
+    <Project Path="src/OsposDesktop/OsposDesktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OsposDesktop.Core.Tests/OsposDesktop.Core.Tests.csproj" />
+  </Folder>
+</Solution>

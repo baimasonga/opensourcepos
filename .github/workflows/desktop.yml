@@ -1,0 +1,51 @@
+name: Desktop app
+
+on:
+  push:
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop.yml'
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build, test and package
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: desktop/global.json
+
+      - name: Test
+        run: dotnet test tests/OsposDesktop.Core.Tests --configuration Release
+
+      - name: Build
+        run: dotnet build OsposDesktop.slnx --configuration Release
+
+      - name: Publish Windows x64 app
+        run: dotnet publish src/OsposDesktop -p:PublishProfile=win-x64
+
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        with:
+          name: OsposDesktop-win-x64
+          path: desktop/artifacts/win-x64/OsposDesktop.exe
+          if-no-files-found: error
